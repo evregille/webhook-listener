@@ -19,6 +19,7 @@ resource "aws_lambda_function" "lambda-webhook" {
   handler       = "webhook.lambda_handler"
   runtime       = "python3.9"
   timeout       = 60
+  source_code_hash = "${data.archive_file.lambda-webhook.output_base64sha256}"
   environment {
     variables = {
       BUCKET_NAME = "${aws_s3_bucket.bucket.id}"
@@ -33,6 +34,7 @@ resource "aws_lambda_function" "lambda-viewer" {
   handler       = "viewer.lambda_handler"
   runtime       = "python3.9"
   timeout       = 60
+  source_code_hash = "${data.archive_file.lambda-viewer.output_base64sha256}"
   environment {
     variables = {
       BUCKET_NAME = "${aws_s3_bucket.bucket.id}"
@@ -64,7 +66,7 @@ resource "aws_lambda_function_url" "lambda_viewer_url" {
   authorization_type = "NONE"
   cors {
     allow_origins     = ["*"]
-    allow_methods = ["GET"]
+    allow_methods = ["*"]
   }
 }
 

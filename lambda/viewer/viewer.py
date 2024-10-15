@@ -1,4 +1,5 @@
 import boto3, os, json
+from datetime import datetime
 
 def lambda_handler(event, context):
     s3 = boto3.client('s3')
@@ -10,15 +11,18 @@ def lambda_handler(event, context):
 
     for obj in objects.get('Contents', []):
         object_key = obj['Key']
+        datetime_string = datetime.strptime(object_key.split('.')[0], '%d%m%Y_%H%M%S').strftime('%Y-%m-%dT%H:%M:%SZ')
         response = s3.get_object(Bucket=os.environ['BUCKET_NAME'], Key=object_key)
-        content = response['Body'].read().decode('utf-8')
-        data = json.loads(content)
+        data = json.loads(response['Body'].read().decode('utf-8'))
+        data.update({"timestamp": datetime_string})
         result_array.append(data)
     
+    result_array.reverse()
+    body = str(result_array)
     return {
         "statusCode": 200,
         "headers": {
             "Content-Type": "application/json"
         },
-        "body": str(result_array.reverse())
+        "body": body
     }
